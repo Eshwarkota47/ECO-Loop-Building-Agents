@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eco-Loop Building Agents | Autonomous Closed-Loop Dashboard</title>
+  <!-- Google Fonts & Chart.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --panel-bg: rgba(18, 26, 43, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-green: #10b981;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 28px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+
+    .brand-title {
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #10b981, #06b6d4, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .student-tag {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+      color: #000;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+    .btn-run:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* METRIC CARDS GRID */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+      transition: transform 0.2s ease;
+    }
+    .card:hover { border-color: rgba(255, 255, 255, 0.18); transform: translateY(-2px); }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-subtext {
+      font-size: 13px;
+      margin-top: 6px;
+      color: var(--accent-green);
+      font-weight: 500;
+    }
+
+    /* CHARTS LAYOUT */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-box {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .chart-header {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* AGENT CONSOLE */
+    .console-box {
+      background: #070a12;
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      height: 380px;
+      overflow-y: auto;
+    }
+
+    .console-line {
+      font-size: 12px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .console-time { color: var(--accent-cyan); font-weight: 600; }
+    .console-tool { color: var(--accent-amber); font-weight: 600; }
+    .console-thought { color: #d1d5db; margin-top: 2px; }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="brand-title">
+        ECO-LOOP BUILDING AGENTS
+        <span class="badge">PHYSICAL AI PO-C</span>
+      </div>
+      <div class="student-tag">Student: Eshwar B N | ID: PES2UG23CS187 | EnergyPlus v24.1 + MCP Server</div>
+    </div>
+    <button class="btn-run" onclick="fetchTelemetry()">⚡ RE-RUN CLOSED-LOOP CYCLE</button>
+  </div>
+
+  <!-- QUANTITATIVE METRIC CARDS -->
+  <div class="metrics-grid">
+    <div class="card">
+      <div class="card-title">Total Energy Reduction</div>
+      <div class="card-value" id="val-kwh-saved">-- %</div>
+      <div class="card-subtext" id="sub-kwh">Baseline: -- kWh ➔ Eco-Loop: -- kWh</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Peak Demand Shaving</div>
+      <div class="card-value" id="val-peak-shaving">-- %</div>
+      <div class="card-subtext" id="sub-peak" style="color: var(--accent-cyan);">Peak: -- kW ➔ -- kW</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Carbon Avoided</div>
+      <div class="card-value" id="val-carbon-avoided">-- %</div>
+      <div class="card-subtext" id="sub-carbon" style="color: var(--accent-purple);">-- kg CO₂ Saved</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Comfort Compliance (ASHRAE 55)</div>
+      <div class="card-value" id="val-comfort">100%</div>
+      <div class="card-subtext" style="color: var(--accent-amber);" id="sub-comfort">PMV Index [-0.5, +0.5]</div>
+    </div>
+  </div>
+
+  <!-- CHARTS & CONSOLE GRID -->
+  <div class="charts-grid">
+    <!-- POWER & SETPOINT GRAPH -->
+    <div class="chart-box">
+      <div class="chart-header">
+        <span>⚡ 24-Hour HVAC Power Demand (Baseline vs. Eco-Loop AI)</span>
+        <span style="font-size:12px; color: var(--text-muted);">15-Min Timestep Resolution</span>
+      </div>
+      <canvas id="powerChart" height="140"></canvas>
+    </div>
+
+    <!-- COGNITIVE AGENT THOUGHT STREAM -->
+    <div class="chart-box" style="display:flex; flex-direction:column;">
+      <div class="chart-header">
+        <span>🧠 Live OSS LLM Thought & MCP Tool Stream</span>
+      </div>
+      <div class="console-box" id="thoughtConsole">
+        <div style="color: var(--text-muted); font-size:12px;">Initializing Model Context Protocol (MCP) stream...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE TEMPERATURE & PMV GRID -->
+  <div class="charts-grid">
+    <div class="chart-box">
+      <div class="chart-header">
+        <span>🌡️ South Perimeter Zone Temperature vs Dynamic Setpoints</span>
+      </div>
+      <canvas id="tempChart" height="120"></canvas>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-header">
+        <span>📊 Fanger PMV Thermal Comfort Index</span>
+      </div>
+      <canvas id="pmvChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="footer">
+    Eco-Loop Building Agents PoC &copy; 2026 | Built for Hackathon Competition | Autonomous Closed-Loop Smart Building Energy Optimization
+  </div>
+
+  <script>
+    let powerChart, tempChart, pmvChart;
+
+    function initCharts() {
+      const pCtx = document.getElementById('powerChart').getContext('2d');
+      powerChart = new Chart(pCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            { label: 'Baseline Rigid HVAC Power (kW)', data: [], borderColor: '#ef4444', borderWidth: 2, tension: 0.3, fill: false },
+            { label: 'Eco-Loop AI HVAC Power (kW)', data: [], borderColor: '#10b981', borderWidth: 2.5, tension: 0.3, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.08)' }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } }, scales: { x: { ticks: { color: '#9ca3af' } }, y: { ticks: { color: '#9ca3af' } } } }
+      });
+
+      const tCtx = document.getElementById('tempChart').getContext('2d');
+      tempChart = new Chart(tCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            { label: 'Zone Temp (°C)', data: [], borderColor: '#3b82f6', borderWidth: 2 },
+            { label: 'Cooling Setpoint (°C)', data: [], borderColor: '#06b6d4', borderDash: [5,5], borderWidth: 1.5 }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } }, scales: { x: { ticks: { color: '#9ca3af' } }, y: { ticks: { color: '#9ca3af' } } } }
+      });
+
+      const pmvCtx = document.getElementById('pmvChart').getContext('2d');
+      pmvChart = new Chart(pmvCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            { label: 'PMV Index', data: [], borderColor: '#8b5cf6', borderWidth: 2, fill: false }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } }, scales: { x: { ticks: { color: '#9ca3af' } }, y: { min: -1.0, max: 1.0, ticks: { color: '#9ca3af' } } } }
+      });
+    }
+
+    async function fetchTelemetry() {
+      try {
+        const res = await fetch('/api/telemetry');
+        const data = await res.json();
+
+        // 1. Update Cards
+        const s = data.summary;
+        document.getElementById('val-kwh-saved').innerText = `${s.kwh_savings_pct}%`;
+        document.getElementById('sub-kwh').innerText = `Baseline: ${s.kwh_baseline.toFixed(1)} kWh ➔ Eco-Loop: ${s.kwh_ecoloop.toFixed(1)} kWh`;
+        
+        document.getElementById('val-peak-shaving').innerText = `${s.peak_shaving_pct}%`;
+        document.getElementById('sub-peak').innerText = `Peak: ${s.peak_kw_baseline.toFixed(1)} kW ➔ ${s.peak_kw_ecoloop.toFixed(1)} kW`;
+
+        document.getElementById('val-carbon-avoided').innerText = `${s.carbon_reduction_pct}%`;
+        document.getElementById('sub-carbon').innerText = `${(s.carbon_baseline_kg - s.carbon_ecoloop_kg).toFixed(1)} kg CO₂ Avoided`;
+
+        // 2. Update Power Chart
+        const hours = data.baseline_history.map(h => `${h.hour.toFixed(1)}h`);
+        const bPower = data.baseline_history.map(h => h.total_hvac_power_kw);
+        const ePower = data.ecoloop_history.map(h => h.total_hvac_power_kw);
+
+        powerChart.data.labels = hours;
+        powerChart.data.datasets[0].data = bPower;
+        powerChart.data.datasets[1].data = ePower;
+        powerChart.update();
+
+        // 3. Update Temp Chart
+        const eSouthTemp = data.ecoloop_history.map(h => {
+          const z = h.zones.find(z => z.zone_id === 'Zone_South');
+          return z ? z.temperature : 22;
+        });
+        const eSouthSet = data.ecoloop_history.map(h => {
+          const z = h.zones.find(z => z.zone_id === 'Zone_South');
+          return z ? z.cooling_setpoint : 23;
+        });
+
+        tempChart.data.labels = hours;
+        tempChart.data.datasets[0].data = eSouthTemp;
+        tempChart.data.datasets[1].data = eSouthSet;
+        tempChart.update();
+
+        // 4. Update PMV Chart
+        const eSouthPmv = data.ecoloop_history.map(h => {
+          const z = h.zones.find(z => z.zone_id === 'Zone_South');
+          return z ? z.pmv : 0;
+        });
+        pmvChart.data.labels = hours;
+        pmvChart.data.datasets[0].data = eSouthPmv;
+        pmvChart.update();
+
+        // 5. Update Thought Console
+        const consoleEl = document.getElementById('thoughtConsole');
+        consoleEl.innerHTML = '';
+        data.agent_thoughts.forEach(t => {
+          const div = document.createElement('div');
+          div.className = 'console-line';
+          div.innerHTML = `
+            <span class="console-time">[Hour ${t.hour.toFixed(1)}h]</span> 
+            <span class="console-tool">MCP::${t.tool_used}</span>
+            <div class="console-thought">${t.thought}</div>
+          `;
+          consoleEl.appendChild(div);
+        });
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+
+      } catch (err) {
+        console.error("Failed to load telemetry:", err);
+      }
+    }
+
+    window.onload = () => {
+      initCharts();
+      fetchTelemetry();
+    };
+  </script>
+</body>
+</html>

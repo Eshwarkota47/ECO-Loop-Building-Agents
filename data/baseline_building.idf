@@ -1,0 +1,67 @@
+! ==============================================================================
+! EnergyPlus Input Data File (IDF) - Baseline 5-Zone Commercial Office Building
+! Project: Eco-Loop Building Agents (PES2UG23CS187 - Eshwar B N)
+! ==============================================================================
+
+Version, 24.1;
+
+Building,
+  Commercial_Office_Baseline, ! Name
+  0.0,                        ! North Axis {deg}
+  Suburbs,                    ! Terrain
+  0.04,                       ! Loads Convergence Tolerance Value {W}
+  0.4,                        ! Temperature Convergence Tolerance Value {deltaC}
+  FullExterior,               ! Solar Distribution
+  25,                         ! Maximum Number of Warmup Days
+  6;                          ! Minimum Number of Warmup Days
+
+Timestep, 4; ! 15-minute timesteps per hour
+
+GlobalGeometryRules,
+  UpperLeftCorner,            ! Starting Vertex Position
+  Counterclockwise,           ! Vertex Entry Direction
+  World;                      ! Coordinate System
+
+! ------------------------------------------------------------------------------
+! ZONES DEFINITION (5 Zones: North, South, East, West, Core)
+! ------------------------------------------------------------------------------
+Zone, Zone_North, 0, 0, 0, 0, 1, 150.0, 450.0;
+Zone, Zone_South, 0, 0, 0, 0, 1, 180.0, 540.0;
+Zone, Zone_East,  0, 0, 0, 0, 1, 120.0, 360.0;
+Zone, Zone_West,  0, 0, 0, 0, 1, 120.0, 360.0;
+Zone, Zone_Core,  0, 0, 0, 0, 1, 300.0, 900.0;
+
+! ------------------------------------------------------------------------------
+! BASELINE RIGID THERMOSTAT SCHEDULES (23°C Cooling / 20°C Heating Always)
+! ------------------------------------------------------------------------------
+ScheduleTypeLimits, Temperature, -60, 100, Continuous;
+
+Schedule:Compact,
+  Baseline_Cooling_Schedule,
+  Temperature,
+  Through: 12/31,
+  For: AllDays,
+  Until: 24:00, 23.0;
+
+Schedule:Compact,
+  Baseline_Heating_Schedule,
+  Temperature,
+  Through: 12/31,
+  For: AllDays,
+  Until: 24:00, 20.0;
+
+ThermostatSetpoint:DualSetpoint,
+  Baseline_DualThermostat,
+  Baseline_Heating_Schedule,
+  Baseline_Cooling_Schedule;
+
+ZoneControl:Thermostat,
+  Zone_North_Thermostat, Zone_North, 1, ThermostatSetpoint:DualSetpoint, Baseline_DualThermostat;
+ZoneControl:Thermostat,
+  Zone_South_Thermostat, Zone_South, 1, ThermostatSetpoint:DualSetpoint, Baseline_DualThermostat;
+ZoneControl:Thermostat,
+  Zone_East_Thermostat,  Zone_East,  1, ThermostatSetpoint:DualSetpoint, Baseline_DualThermostat;
+ZoneControl:Thermostat,
+  Zone_West_Thermostat,  Zone_West,  1, ThermostatSetpoint:DualSetpoint, Baseline_DualThermostat;
+ZoneControl:Thermostat,
+  Zone_Core_Thermostat,  Zone_Core,  1, ThermostatSetpoint:DualSetpoint, Baseline_DualThermostat;
